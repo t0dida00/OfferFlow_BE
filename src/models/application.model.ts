@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IApplication extends Document {
     userId: string;
-    emailId: string; // Link to the source email
+    emailIds: string[]; // Link to source emails
     company: string;
     role: string;
     location: string;
@@ -14,7 +14,7 @@ export interface IApplication extends Document {
 
 const ApplicationSchema: Schema = new Schema({
     userId: { type: String, required: true, ref: 'User' },
-    emailId: { type: String, required: true, unique: true },
+    emailIds: [{ type: String }],
     company: { type: String },
     role: { type: String },
     location: { type: String },

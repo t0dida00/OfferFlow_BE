@@ -129,10 +129,23 @@ export const emailAnalysis = async (req: Request, res: Response) => {
         }));
 
         // Persist Applications
+        // We group by userId + company + role (case insensitive?)
+        // For now, assuming exact match or we prefer normalized company name from AI
         await Promise.all(formatedApplicationData.map((app) => {
             return Application.findOneAndUpdate(
-                { emailId: app.id },
-                { ...app, userId, emailId: app.id },
+                {
+                    userId,
+                    company: app.company,
+                    role: app.role
+                },
+                {
+                    $addToSet: { emailIds: app.id },
+                    $set: {
+                        status: app.status,
+                        location: app.location,
+                        date: app.date
+                    }
+                },
                 { upsert: true, new: true }
             );
         }));
