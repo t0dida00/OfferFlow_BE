@@ -1,4 +1,4 @@
-import { env } from '../config/env';
+import { User } from '../models/user.model';
 
 interface GoogleTokens {
     access_token: string;
@@ -9,15 +9,40 @@ interface GoogleTokens {
     expiry_date?: number;
 }
 
-// In-memory storage for tokens (Note: This will reset on server restart)
-// In a production app, use a database (e.g., PostgreSQL, MongoDB, Redis)
-const tokenStore = new Map<string, GoogleTokens>();
+export const saveUserWithTokens = async (
+    googleId: string,
+    email: string,
+    name: string,
+    picture: string,
+    tokens: GoogleTokens
+) => {
+    const updateData: any = {
+        email,
+        name,
+        picture,
+        accessToken: tokens.access_token,
+        tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date) : undefined,
+    };
 
-export const saveGoogleTokens = async (userId: string, tokens: any) => {
-    tokenStore.set(userId, tokens);
-    console.log(`Saved tokens for user ${userId}`);
+    if (tokens.refresh_token) {
+        updateData.refreshToken = tokens.refresh_token;
+    }
+
+    const user = await User.findOneAndUpdate(
+        { googleId },
+        updateData,
+        { upsert: true, new: true }
+    );
+
+    return user;
 };
 
-export const getGoogleTokensForUser = async (userId: string) => {
-    return tokenStore.get(userId);
+export const getUserTokens = async (userId: string) => {
+    const user = await User.findOne({ googleId: userId });
+    if (!user) return null;
+    return {
+        access_token: user.accessToken,
+        refresh_token: user.refreshToken,
+        expiry_date: user.tokenExpiry ? user.tokenExpiry.getTime() : undefined,
+    };
 };

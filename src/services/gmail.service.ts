@@ -1,5 +1,45 @@
 import { google, gmail_v1 } from 'googleapis';
 
+const getBody = (payload: any): string => {
+    if (!payload) return '';
+    if (payload.body && payload.body.data) {
+        return Buffer.from(payload.body.data, 'base64').toString('utf-8');
+    }
+    if (payload.parts) {
+        for (const part of payload.parts) {
+            if (part.mimeType === 'text/html') {
+                return getBody(part);
+            }
+        }
+        // Fallback to text/plain if no HTML found
+        for (const part of payload.parts) {
+            if (part.mimeType === 'text/plain') {
+                return getBody(part);
+            }
+        }
+    }
+    return '';
+};
+
+const cleanContent = (html: string): string => {
+    // 1. Extract body content
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    let content = bodyMatch ? bodyMatch[1] : html;
+
+    // 2. Remove scripts and styles
+    content = content.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gmi, "");
+    content = content.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gmi, "");
+
+    // 3. Remove all HTML tags
+    content = content.replace(/<\/?[^>]+(>|$)/g, " ");
+
+    // 4. Decode HTML entities (basic)
+    content = content.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+
+    // 5. Normalize whitespace (remove newlines, trim multiple spaces)
+    return content.replace(/\s+/g, ' ').trim();
+};
+
 export const fetchRecentEmails = async (accessToken: string, limit: number = 10) => {
     try {
         console.log('Fetching recent emails...');
@@ -12,6 +52,7 @@ export const fetchRecentEmails = async (accessToken: string, limit: number = 10)
         const response = await gmail.users.messages.list({
             userId: 'me',
             maxResults: limit,
+            q: "category:primary"
         });
 
         const messages = response.data.messages || [];
@@ -19,7 +60,6 @@ export const fetchRecentEmails = async (accessToken: string, limit: number = 10)
         if (messages.length === 0) {
             return [];
         }
-
         // Fetch details for each message
         const emailPromises = messages.map(async (msg: gmail_v1.Schema$Message) => {
             if (!msg.id) return null;
@@ -37,12 +77,16 @@ export const fetchRecentEmails = async (accessToken: string, limit: number = 10)
             const from = headers.find((h: gmail_v1.Schema$MessagePartHeader) => h.name === 'From')?.value || 'Unknown Sender';
             const date = headers.find((h: gmail_v1.Schema$MessagePartHeader) => h.name === 'Date')?.value || '';
 
+            const rawBody = getBody(payload);
+            const content = cleanContent(rawBody);
+
             return {
                 id: msg.id,
                 snippet: detail.data.snippet,
                 subject,
                 from,
                 date,
+                content
             };
         });
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { fetchRecentEmails } from '../services/gmail.service';
-import { getGoogleTokensForUser } from '../services/token.service';
+import { getUserTokens } from '../services/token.service';
 
 export const getRecentEmails = async (req: Request, res: Response) => {
     try {
@@ -14,7 +14,7 @@ export const getRecentEmails = async (req: Request, res: Response) => {
         }
 
         // 🔐 Load Google tokens from backend storage
-        const tokens = await getGoogleTokensForUser(userId);
+        const tokens = await getUserTokens(userId);
 
         if (!tokens?.access_token) {
             return res.status(401).json({ error: "Google account not linked or tokens expired" });

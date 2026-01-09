@@ -4,7 +4,7 @@ import {
     verifyIdToken,
     createAppJWT
 } from "../services/auth.service";
-import { saveGoogleTokens } from "../services/token.service";
+import { saveUserWithTokens } from "../services/token.service";
 
 export const googleCallback = async (req: Request, res: Response) => {
     try {
@@ -12,12 +12,23 @@ export const googleCallback = async (req: Request, res: Response) => {
         if (!code) throw new Error("Missing code");
 
         const tokens = await exchangeCodeForTokens(code);
-        const user = verifyIdToken(tokens.id_token);
+        const userInfo = verifyIdToken(tokens.id_token);
 
-        // Save tokens securely (in memory for now)
-        await saveGoogleTokens(user.sub, tokens);
+        // Save/Update user and tokens in MongoDB
+        const user = await saveUserWithTokens(
+            userInfo.sub,
+            userInfo.email,
+            userInfo.name,
+            userInfo.picture,
+            tokens
+        );
 
-        const appToken = createAppJWT(user);
+        const appToken = createAppJWT({
+            sub: user.googleId,
+            email: user.email,
+            name: user.name,
+            picture: user.picture
+        });
 
         res.redirect(
             `http://localhost:3000/login-success?token=${appToken}`
