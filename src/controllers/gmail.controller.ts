@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import { fetchRecentEmails } from '../services/gmail.service';
 import { getUserTokens } from '../services/token.service';
 import { analyzeBulkEmails } from '../services/huggingFace.service';
+import { Email } from '../models/email.model';
+import { Application } from '../models/application.model';
+import { User } from '../models/user.model';
 
 export const getRecentEmails = async (req: Request, res: Response) => {
     try {
@@ -49,7 +52,37 @@ export const emailAnalysis = async (req: Request, res: Response) => {
 
         // 1. Fetch emails
         const emails = await fetchRecentEmails(tokens.access_token, limit);
-        const formatedDataToAnalyze = emails.map((email) => {
+
+        const user = await User.findOne({ googleId: userId });
+        const lastSyncedId = user?.lastSyncedEmailId;
+
+        let emailsToAnalyze = emails;
+
+        if (lastSyncedId) {
+            const lastSyncedIndex = emails.findIndex(e => e?.id === lastSyncedId);
+            if (lastSyncedIndex !== -1) {
+                // If found, take all emails before this index (newer ones)
+                emailsToAnalyze = emails.slice(0, lastSyncedIndex);
+            }
+            // If not found in current batch, we assume all match (or we'd need pagination, but treating as all new for now)
+        }
+
+        // Update last synced ID to the latest email (first in the list)
+        if (emails.length > 0 && emails[0]?.id) {
+            await User.findOneAndUpdate({ googleId: userId }, { lastSyncedEmailId: emails[0].id });
+        }
+
+        if (emailsToAnalyze.length === 0) {
+            console.log("No new emails to analyze");
+            return res.json({
+                success: true,
+                message: "No new emails to analyze",
+                formatedEmailData: [],
+                formatedApplicationData: []
+            });
+        }
+
+        const formatedDataToAnalyze = emailsToAnalyze.map((email) => {
             return {
                 id: email?.id,
                 subject: email?.subject,
@@ -84,6 +117,26 @@ export const emailAnalysis = async (req: Request, res: Response) => {
                 date: emails.find((e) => e?.id === application?.id)?.date,
             }
         });
+
+
+        // Persist Emails
+        await Promise.all(formatedEmailData.map((email) => {
+            return Email.findOneAndUpdate(
+                { emailId: email.id },
+                { ...email, userId, emailId: email.id },
+                { upsert: true, new: true }
+            );
+        }));
+
+        // Persist Applications
+        await Promise.all(formatedApplicationData.map((app) => {
+            return Application.findOneAndUpdate(
+                { emailId: app.id },
+                { ...app, userId, emailId: app.id },
+                { upsert: true, new: true }
+            );
+        }));
+
         return res.json({
             success: true,
             formatedEmailData,

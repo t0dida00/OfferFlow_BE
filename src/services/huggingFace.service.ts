@@ -101,9 +101,8 @@ INPUT:${emails}
             ],
             temperature: 0,
         });
-
+        console.log("Calling Bulk of Email Analysis")
         const content = result.choices?.[0]?.message?.content;
-        console.log(result);
         if (!content) {
             throw new Error("Empty response from model");
         }
