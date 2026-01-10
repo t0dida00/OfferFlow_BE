@@ -160,3 +160,43 @@ export const emailAnalysis = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Failed to analyze emails' });
     }
 };
+
+export const getStoredEmails = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.sub;
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const emails = await Email.find({ userId })
+            .sort({ date: -1 })
+            .limit(limit);
+
+        res.json({ success: true, count: emails.length, data: emails });
+    } catch (error) {
+        console.error('Error fetching stored emails:', error);
+        res.status(500).json({ error: 'Failed to fetch stored emails' });
+    }
+};
+
+export const getStoredApplications = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.sub;
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const applications = await Application.find({ userId })
+            .sort({ updatedAt: -1 })
+            .limit(limit);
+
+        res.json({ success: true, count: applications.length, data: applications });
+    } catch (error) {
+        console.error('Error fetching stored applications:', error);
+        res.status(500).json({ error: 'Failed to fetch stored applications' });
+    }
+};
