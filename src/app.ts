@@ -5,6 +5,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.routes';
 import textAnalyzerRoutes from './routes/textAnalyzer.routes';
 import gmailRoutes from './routes/gmail.routes';
+import applicationRoutes from './routes/application.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/v1/text', textAnalyzerRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/gmail', gmailRoutes);
+app.use('/api/v1/applications', applicationRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
