@@ -77,11 +77,11 @@ Extract job data as JSON only. If none return {"break":true}. Else return {"comp
 
 export async function analyzeBulkEmails(emails: string): Promise<any[]> {
     const prompt = `
-You will receive an array of email objects. Return VALID JSON ONLY as an array. From the input, KEEP ONLY emails that are real job application emails I personally applied to or direct follow-ups of those applications. DROP everything else (which are not related to the job application) completely. For each kept email, analyze and return {id, status, company, role, location}. Status must be one of: applied, interview, offer, rejected.
+You will receive an array of email objects. Return VALID JSON ONLY as an array. From the input, KEEP ONLY emails that are real job application emails I personally applied to or direct follow-ups of those applications. DROP everything else (which are not related to the job application) completely. For each kept email, analyze and return {id, status, company, role, location}. Status must be one of: Applied, Interview, Offer, Rejected.
 EXAMPLE OUTPUT:
 [{
     "id": string,
-    "status": "applied" | "interview" | "offer" | "rejected",
+    "status": "Applied" | "Interview" | "Offer" | "Rejected",
     "company": string | null,
     "role": string |null,
     "location": string | null

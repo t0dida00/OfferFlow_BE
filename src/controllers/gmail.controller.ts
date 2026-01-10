@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { fetchRecentEmails } from '../services/gmail.service';
-import { getUserTokens } from '../services/token.service';
+import { getValidAccessToken } from '../services/token.service';
 import { analyzeBulkEmails } from '../services/huggingFace.service';
 import { Email } from '../models/email.model';
 import { Application } from '../models/application.model';
@@ -17,14 +17,12 @@ export const getRecentEmails = async (req: Request, res: Response) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        // 🔐 Load Google tokens from backend storage
-        const tokens = await getUserTokens(userId);
 
-        if (!tokens?.access_token) {
-            return res.status(401).json({ error: "Google account not linked or tokens expired" });
-        }
+        // 🔐 Load Google tokens from backend storage (auto-refreshes if needed)
+        const accessToken = await getValidAccessToken(userId);
 
-        const emails = await fetchRecentEmails(tokens.access_token, limit);
+
+        const emails = await fetchRecentEmails(accessToken, limit);
         res.json({
             success: true,
             data: emails
@@ -44,14 +42,12 @@ export const emailAnalysis = async (req: Request, res: Response) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const tokens = await getUserTokens(userId);
 
-        if (!tokens?.access_token) {
-            return res.status(401).json({ error: "Google account not linked or tokens expired" });
-        }
+        const accessToken = await getValidAccessToken(userId);
+
 
         // 1. Fetch emails
-        const emails = await fetchRecentEmails(tokens.access_token, limit);
+        const emails = await fetchRecentEmails(accessToken, limit);
 
         const user = await User.findOne({ googleId: userId });
         const lastSyncedId = user?.lastSyncedEmailId;
@@ -67,10 +63,13 @@ export const emailAnalysis = async (req: Request, res: Response) => {
             // If not found in current batch, we assume all match (or we'd need pagination, but treating as all new for now)
         }
 
-        // Update last synced ID to the latest email (first in the list)
+        // Update last synced ID to the latest email (first in the list) AND update lastSyncTime
+        const updateData: any = { lastSyncTime: new Date() };
         if (emails.length > 0 && emails[0]?.id) {
-            await User.findOneAndUpdate({ googleId: userId }, { lastSyncedEmailId: emails[0].id });
+            updateData.lastSyncedEmailId = emails[0].id;
         }
+        await User.findOneAndUpdate({ googleId: userId }, updateData);
+
 
         if (emailsToAnalyze.length === 0) {
             console.log("No new emails to analyze");

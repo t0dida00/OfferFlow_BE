@@ -37,12 +37,48 @@ export const saveUserWithTokens = async (
     return user;
 };
 
-export const getUserTokens = async (userId: string) => {
-    const user = await User.findOne({ googleId: userId });
-    if (!user) return null;
-    return {
-        access_token: user.accessToken,
-        refresh_token: user.refreshToken,
-        expiry_date: user.tokenExpiry ? user.tokenExpiry.getTime() : undefined,
+
+export const updateAccessToken = async (userId: string, tokens: any) => {
+    const updateData: any = {
+        accessToken: tokens.access_token,
+        tokenExpiry: new Date(Date.now() + tokens.expires_in * 1000),
     };
+
+    await User.findOneAndUpdate(
+        { googleId: userId },
+        updateData,
+        { new: true }
+    );
+};
+
+import { refreshGoogleToken } from './auth.service';
+
+export const getValidAccessToken = async (userId: string) => {
+    const user = await User.findOne({ googleId: userId });
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    if (!user.accessToken || !user.refreshToken) {
+        throw new Error('User tokens missing');
+    }
+
+    // Check if token is expired or about to expire (e.g., within 5 minutes)
+    const now = new Date();
+    const expiryBuffer = 5 * 60 * 1000; // 5 minutes
+    const isExpired = !user.tokenExpiry || (user.tokenExpiry.getTime() - expiryBuffer < now.getTime());
+
+    if (isExpired) {
+        console.log('Access token expired, refreshing...');
+        try {
+            const newTokens = await refreshGoogleToken(user.refreshToken);
+            await updateAccessToken(userId, newTokens);
+            return newTokens.access_token;
+        } catch (error) {
+            console.error('Failed to refresh token:', error);
+            throw new Error('Failed to refresh access token');
+        }
+    }
+
+    return user.accessToken;
 };

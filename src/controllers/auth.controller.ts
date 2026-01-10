@@ -37,3 +37,34 @@ export const googleCallback = async (req: Request, res: Response) => {
         res.status(401).json({ error: error.message });
     }
 };
+
+import { User } from "../models/user.model";
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.sub;
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const formatedData = {
+            id: user.googleId,
+            email: user.email,
+            name: user.name,
+            lastSyncedEmailId: user.lastSyncedEmailId,
+            lastSyncTime: user.lastSyncTime
+        }
+        res.json({
+            success: true,
+            data: formatedData
+        });
+    } catch (error: any) {
+        console.error("Error fetching current user:", error);
+        res.status(500).json({ error: "Failed to fetch user" });
+    }
+};

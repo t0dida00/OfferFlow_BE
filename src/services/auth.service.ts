@@ -30,10 +30,25 @@ export const verifyIdToken = (idToken: string) => {
     return payload; // email, sub, name, picture
 };
 
+
 export const createAppJWT = (user: any) => {
     return jwt.sign(
         { sub: user.sub, email: user.email },
         env.JWT_SECRET,
         { expiresIn: "7d" }
     );
+};
+
+export const refreshGoogleToken = async (refreshToken: string) => {
+    const { data } = await axios.post(
+        "https://oauth2.googleapis.com/token",
+        {
+            client_id: env.GOOGLE_CLIENT_ID,
+            client_secret: env.GOOGLE_CLIENT_SECRET,
+            refresh_token: refreshToken,
+            grant_type: "refresh_token",
+        }
+    );
+
+    return data; // contains access_token, expires_in, scope, token_type
 };

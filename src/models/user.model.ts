@@ -9,6 +9,7 @@ export interface IUser extends Document {
     refreshToken?: string;
     tokenExpiry?: Date;
     lastSyncedEmailId?: string;
+    lastSyncTime?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -22,6 +23,7 @@ const UserSchema: Schema = new Schema({
     refreshToken: { type: String },
     tokenExpiry: { type: Date },
     lastSyncedEmailId: { type: String },
+    lastSyncTime: { type: Date },
 }, {
     timestamps: true
 });
