@@ -17,6 +17,10 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.get('/', (req, res) => {
+    res.send('API is work');
+});
+
 app.use('/api/v1/text', textAnalyzerRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/gmail', gmailRoutes);
