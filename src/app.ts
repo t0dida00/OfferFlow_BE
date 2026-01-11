@@ -18,7 +18,7 @@ app.use(express.json());
 
 // Routes
 app.get('/', (req, res) => {
-    res.send('API is work');
+    res.send('OfferFlow API is working');
 });
 
 app.use('/api/v1/text', textAnalyzerRoutes);
