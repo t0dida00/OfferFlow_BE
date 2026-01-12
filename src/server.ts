@@ -1,21 +1,25 @@
-import app from './app';
-import { env } from './config/env';
-import { connectDB } from './config/database';
+import app from "./app";
+import { env } from "./config/env";
+import { connectDB } from "./config/database";
 
 const PORT = env.PORT;
 
-// Connect to Database
-connectDB();
+(async () => {
+    try {
+        await connectDB(); // 🔥 MUST await
 
-const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Endpoint: http://localhost:${PORT}/api/v1/text/analyzer`);
-});
+        const server = app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
 
-// Handle graceful shutdown
-process.on('SIGTERM', () => {
-    console.log('SIGTERM signal received: closing HTTP server');
-    server.close(() => {
-        console.log('HTTP server closed');
-    });
-});
+        process.on("SIGTERM", () => {
+            console.log("SIGTERM signal received: closing HTTP server");
+            server.close(() => {
+                console.log("HTTP server closed");
+            });
+        });
+    } catch (err) {
+        console.error("Failed to start server:", err);
+        process.exit(1);
+    }
+})();

@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import helmet from 'helmet';
 import compression from 'compression';
 import cors from 'cors';
@@ -18,7 +19,8 @@ app.use(express.json());
 
 // Routes
 app.get('/', (req, res) => {
-    res.send('OfferFlow API is working');
+    const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+    res.send(`OfferFlow API is working. Database: ${dbStatus}`);
 });
 
 app.use('/api/v1/text', textAnalyzerRoutes);
