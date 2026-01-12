@@ -27,7 +27,7 @@ app.use(express.json());
 app.get('/', (req, res) => {
     const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
 
-    res.send(`OfferFlow API is working. Database: ${dbStatus}. URI: ${env.MONGODB_URI}`);
+    res.send(`OfferFlow API is working. Database: ${dbStatus}. `);
 });
 
 app.use('/api/v1/text', textAnalyzerRoutes);
