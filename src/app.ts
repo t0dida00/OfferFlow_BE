@@ -8,8 +8,10 @@ import textAnalyzerRoutes from './routes/textAnalyzer.routes';
 import gmailRoutes from './routes/gmail.routes';
 import applicationRoutes from './routes/application.routes';
 import { errorHandler } from './middleware/error.middleware';
+import { connectDB } from './config/database';
 
 const app = express();
+connectDB();
 
 // Security and Performance Middleware
 app.use(helmet());
