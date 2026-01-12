@@ -2,9 +2,14 @@ import { Request, Response } from "express";
 import {
     exchangeCodeForTokens,
     verifyIdToken,
-    createAppJWT
+    createAppJWT,
+    getGoogleAuthURL
 } from "../services/auth.service";
 import { saveUserWithTokens } from "../services/token.service";
+
+export const redirectToGoogle = (req: Request, res: Response) => {
+    res.redirect(getGoogleAuthURL());
+};
 
 export const googleCallback = async (req: Request, res: Response) => {
     try {

@@ -18,6 +18,26 @@ export const exchangeCodeForTokens = async (code: string) => {
     return data;
 };
 
+export const getGoogleAuthURL = () => {
+    const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+    const options = {
+        redirect_uri: env.GOOGLE_REDIRECT_URI,
+        client_id: env.GOOGLE_CLIENT_ID,
+        access_type: "online",
+        response_type: "code",
+        prompt: "consent",
+        scope: [
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/gmail.readonly",
+        ].join(" "),
+    };
+
+    const qs = new URLSearchParams(options);
+
+    return `${rootUrl}?${qs.toString()}`;
+};
+
 export const verifyIdToken = (idToken: string) => {
     const payload = JSON.parse(
         Buffer.from(idToken.split(".")[1], "base64").toString()
