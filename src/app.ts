@@ -8,7 +8,9 @@ import textAnalyzerRoutes from './routes/textAnalyzer.routes';
 import gmailRoutes from './routes/gmail.routes';
 import applicationRoutes from './routes/application.routes';
 import { errorHandler } from './middleware/error.middleware';
+import { env } from './config/env';
 import { connectDB } from './config/database';
+
 
 const app = express();
 connectDB();
@@ -19,10 +21,13 @@ app.use(compression());
 app.use(cors());
 app.use(express.json());
 
+
+
 // Routes
 app.get('/', (req, res) => {
     const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
-    res.send(`OfferFlow API is working. Database: ${dbStatus}`);
+
+    res.send(`OfferFlow API is working. Database: ${dbStatus}. URI: ${env.MONGODB_URI}`);
 });
 
 app.use('/api/v1/text', textAnalyzerRoutes);
