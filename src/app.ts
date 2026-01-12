@@ -13,7 +13,7 @@ import { connectDB } from './config/database';
 
 
 const app = express();
-connectDB();
+
 
 // Security and Performance Middleware
 app.use(helmet());

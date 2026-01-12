@@ -1,3 +1,8 @@
 import app from '../src/app';
 
-export default app;
+import { connectDB } from '../src/config/database';
+
+export default async function handler(req: any, res: any) {
+    await connectDB();
+    return app(req, res);
+}
