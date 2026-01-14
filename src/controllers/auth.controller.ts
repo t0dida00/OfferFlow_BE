@@ -36,7 +36,7 @@ export const googleCallback = async (req: Request, res: Response) => {
         });
 
         res.redirect(
-            `http://localhost:3000/login-success?token=${appToken}`
+            `https://offerflow-wine.vercel.app/login-success?token=${appToken}`
         );
     } catch (error: any) {
         res.status(401).json({ error: error.message });
