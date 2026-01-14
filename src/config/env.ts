@@ -12,7 +12,8 @@ const envSchema = z.object({
     GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET is required"),
     GOOGLE_REDIRECT_URI: z.string().default("http://localhost:8080/api/v1/auth/google"),
     JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
-    MONGODB_URI: z.string().min(1, "MONGODB_URI is required")
+    MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
+    FRONTEND_URI: z.string().default("http://localhost:3000")
 });
 
 const envServer = envSchema.safeParse(process.env);

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { env } from "../config/env";
 import {
     exchangeCodeForTokens,
     verifyIdToken,
@@ -36,7 +37,7 @@ export const googleCallback = async (req: Request, res: Response) => {
         });
 
         res.redirect(
-            `https://offerflow-fe.vercel.app/login-success?token=${appToken}`
+            `${env.FRONTEND_URI}/login-success?token=${appToken}`
         );
     } catch (error: any) {
         res.status(401).json({ error: error.message });
