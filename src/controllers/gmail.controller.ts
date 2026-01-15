@@ -97,6 +97,7 @@ export const emailAnalysis = async (req: Request, res: Response) => {
         //     count: analyzedEmails.length,
         //     data: analyzedEmails
         // });
+        console.log("analyzedEmails: ",analyzedEmails)
         const formatedEmailData = analyzedEmails.map((email, index) => {
             return {
                 id: email?.id,
