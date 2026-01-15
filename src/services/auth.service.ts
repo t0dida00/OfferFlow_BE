@@ -15,6 +15,7 @@ export const exchangeCodeForTokens = async (code: string) => {
         { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
+
     return data;
 };
 
@@ -23,7 +24,7 @@ export const getGoogleAuthURL = () => {
     const options = {
         redirect_uri: env.GOOGLE_REDIRECT_URI,
         client_id: env.GOOGLE_CLIENT_ID,
-        access_type: "online",
+        access_type: "offline",
         response_type: "code",
         prompt: "consent",
         scope: [

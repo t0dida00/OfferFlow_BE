@@ -6,7 +6,7 @@ interface GoogleTokens {
     scope?: string;
     token_type?: string;
     id_token?: string;
-    expiry_date?: number;
+    expires_in: number;
 }
 
 export const saveUserWithTokens = async (
@@ -21,7 +21,7 @@ export const saveUserWithTokens = async (
         name,
         picture,
         accessToken: tokens.access_token,
-        tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date) : undefined,
+        tokenExpiry: new Date(Date.now() + tokens.expires_in * 1000),
     };
 
     if (tokens.refresh_token) {
