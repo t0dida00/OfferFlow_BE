@@ -80,7 +80,7 @@ export const emailAnalysis = async (req: Request, res: Response) => {
                 formatedApplicationData: []
             });
         }
-
+        
         const formatedDataToAnalyze = emailsToAnalyze.map((email) => {
             return {
                 id: email?.id,
@@ -97,6 +97,7 @@ export const emailAnalysis = async (req: Request, res: Response) => {
         //     count: analyzedEmails.length,
         //     data: analyzedEmails
         // });
+        console.log("emails: ", emails)
         console.log("analyzedEmails: ",analyzedEmails)
         const formatedEmailData = analyzedEmails.map((email, index) => {
             return {
