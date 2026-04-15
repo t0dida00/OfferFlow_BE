@@ -12,11 +12,12 @@ export const generatePdf = async (req: Request, res: Response) => {
         const pdfBuffer = await generatePdfFromHtml(html);
 
         const downloadName = filename ? `${filename}.pdf` : 'document.pdf';
-        res.set({
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="${downloadName}"`,
-            'Content-Length': pdfBuffer.length,
-        });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${downloadName}"`
+        );
 
         res.send(pdfBuffer);
     } catch (error: any) {
